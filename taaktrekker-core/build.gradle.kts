@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("conventions.java")
 }
 
 group = "dev.frankboer"
