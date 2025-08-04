@@ -1,3 +1,4 @@
+### Gradle ###
 .gradle
 **/build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -5,16 +6,47 @@
 !**/src/test/**/build/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+# AWS User-specific
+.idea/**/aws.xml
+
+# Generated files
+.idea/**/contentModel.xml
+
+# Sensitive or high-churn files
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+
+# Gradle
+.idea/**/gradle.xml
+.idea/**/libraries
+
+# IntelliJ project files
 *.iws
 *.iml
 *.ipr
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+### BuildSrc ###
+buildSrc/.gradle/
+buildSrc/build/
+buildSrc/build/kotlin-dsl/
 
 ### Eclipse ###
 .apt_generated
@@ -40,4 +72,28 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-/buildSrc/build/
+
+### Linux ###
+*~
+
+### Windows ###
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows shortcuts
+*.lnk
+
+# HTTP Client private environment files
+http-client.private.env.json
