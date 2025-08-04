@@ -1,13 +1,12 @@
 package dev.frankboer.domain;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
 class JobTest {
-    
+
     @Test
     void testJob() {
         Job job = new Job(null);
@@ -20,6 +19,4 @@ class JobTest {
         assertNotNull(job.jobId());
         assertDoesNotThrow(() -> UUID.fromString(job.jobId().toString()));
     }
-
-
 }
