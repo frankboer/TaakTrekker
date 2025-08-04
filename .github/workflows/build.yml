@@ -3,9 +3,13 @@ name: Build
 on:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: runner
+    runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v4
         name: Checkout
