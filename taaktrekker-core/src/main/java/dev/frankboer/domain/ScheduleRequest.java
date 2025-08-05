@@ -1,4 +1,3 @@
 package dev.frankboer.domain;
 
-public class ScheduleRequest {
-}
+public class ScheduleRequest {}

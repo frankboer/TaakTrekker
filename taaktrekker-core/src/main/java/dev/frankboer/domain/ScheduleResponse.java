@@ -1,4 +1,3 @@
 package dev.frankboer.domain;
 
-public class ScheduleResponse {
-}
+public class ScheduleResponse {}

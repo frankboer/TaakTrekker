@@ -4,10 +4,8 @@ import dev.frankboer.domain.ScheduleRequest;
 import dev.frankboer.domain.ScheduleResponse;
 import dev.frankboer.service.ScheduleException;
 import dev.frankboer.service.Scheduler;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
+import javax.sql.DataSource;
 
 public class JdbcScheduler implements Scheduler {
     private final DataSource dataSource;
@@ -18,7 +16,7 @@ public class JdbcScheduler implements Scheduler {
 
     @Override
     public ScheduleResponse schedule(ScheduleRequest request) {
-        try (Connection connection = dataSource.getConnection()) {
+        try (var connection = dataSource.getConnection()) {
             // TODO implement
         } catch (SQLException e) {
             throw new ScheduleException(e);
