@@ -1,3 +1,3 @@
 package dev.frankboer.domain;
 
-public class ScheduleRequest {}
+public record ScheduleRequest(String type, int priority, String payload) {}
