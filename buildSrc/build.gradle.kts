@@ -10,5 +10,5 @@ repositories {
 
 dependencies {
     api("com.diffplug.spotless", "spotless-plugin-gradle", "7.0.2")
-    implementation("io.freefair.lombok:io.freefair.lombok.gradle.plugin:8.12.2.1")
+    implementation("io.freefair.lombok:io.freefair.lombok.gradle.plugin:8.14")
 }
