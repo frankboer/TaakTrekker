@@ -3,17 +3,21 @@ package dev.frankboer.service.jdbc;
 import dev.frankboer.domain.Job;
 import dev.frankboer.domain.ScheduleRequest;
 import dev.frankboer.service.JobQueue;
+import dev.frankboer.service.Listener;
 import dev.frankboer.service.ScheduleException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.LinkedList;
+import java.util.List;
 import javax.sql.DataSource;
 
 public class JdbcJobQueue implements JobQueue {
     private final DataSource dataSource;
+    private final Listener listener;
 
-    public JdbcJobQueue(DataSource dataSource) {
+    public JdbcJobQueue(DataSource dataSource, Listener listener) {
         this.dataSource = dataSource;
+        this.listener = listener;
     }
 
     @Override
@@ -27,7 +31,9 @@ public class JdbcJobQueue implements JobQueue {
 
                 var rs = stmt.executeQuery();
                 if (rs.next()) {
-                    return mapResultSetToJob(rs);
+                    Job job = mapResultSetToJob(rs);
+                    listener.onJobScheduled(job);
+                    return job;
                 }
             }
 
@@ -39,33 +45,35 @@ public class JdbcJobQueue implements JobQueue {
     }
 
     @Override
-    public Optional<Job> dequeue() {
+    public List<Job> dequeue(int limit) {
         try (var connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             try {
                 String sql =
                         """
                 UPDATE jobs
-                SET status = 'processing', updated_at = NOW()
-                WHERE id = (
+                SET status = 'RUNNING', updated_at = NOW()
+                WHERE id IN (
                     SELECT id FROM jobs
-                    WHERE status = 'pending'
+                    WHERE status = 'PENDING'
                     ORDER BY priority DESC, created_at ASC
-                    LIMIT 1
+                    LIMIT %d
                     FOR UPDATE SKIP LOCKED
                 )
                 RETURNING *
-                """;
+                """
+                                .formatted(limit);
                 try (var stmt = connection.prepareStatement(sql)) {
                     var rs = stmt.executeQuery();
-                    if (rs.next()) {
+
+                    var jobs = new LinkedList<Job>();
+                    while (rs.next()) {
                         Job job = mapResultSetToJob(rs);
-                        connection.commit();
-                        return Optional.of(job);
+                        jobs.add(job);
                     }
+                    connection.commit();
+                    return jobs;
                 }
-                connection.commit();
-                return Optional.empty();
             } catch (SQLException e) {
                 connection.rollback();
                 throw e;

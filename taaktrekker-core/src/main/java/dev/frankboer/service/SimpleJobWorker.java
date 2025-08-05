@@ -23,9 +23,10 @@ public class SimpleJobWorker implements JobWorker {
                 () -> {
                     // Random Thread.sleep between 1 and 5 seconds
                     try {
+                        System.out.println("job = " + job);
                         Thread.sleep((long) (Math.random() * 5000));
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        throw new IllegalStateException(e);
                     }
                     return null;
                 },

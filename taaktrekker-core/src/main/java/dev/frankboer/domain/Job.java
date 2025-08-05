@@ -16,7 +16,7 @@ public class Job {
         RUNNING,
         COMPLETED,
         FAILED
-    };
+    }
 
     // Constructor
     public Job(String type, int priority, String payload) {
@@ -76,5 +76,17 @@ public class Job {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Job{" + "id="
+                + id + ", type='"
+                + type + '\'' + ", priority="
+                + priority + ", status="
+                + status + ", payload='"
+                + payload + '\'' + ", createdAt="
+                + createdAt + ", updatedAt="
+                + updatedAt + '}';
     }
 }
