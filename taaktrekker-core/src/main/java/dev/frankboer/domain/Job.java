@@ -7,11 +7,16 @@ public class Job {
     private String type;
     private int priority;
     private Status status;
-    private String payload;  // We'll store JSON as String
+    private String payload; // We'll store JSON as String
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public enum Status {PENDING, RUNNING, COMPLETED, FAILED};
+    public enum Status {
+        PENDING,
+        RUNNING,
+        COMPLETED,
+        FAILED
+    };
 
     // Constructor
     public Job(String type, int priority, String payload) {

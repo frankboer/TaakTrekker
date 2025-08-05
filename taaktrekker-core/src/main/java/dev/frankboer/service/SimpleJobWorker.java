@@ -1,7 +1,6 @@
 package dev.frankboer.service;
 
 import dev.frankboer.domain.Job;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
@@ -20,14 +19,16 @@ public class SimpleJobWorker implements JobWorker {
 
     @Override
     public CompletionStage<Void> run(Job job) {
-        return CompletableFuture.supplyAsync(() -> {
-            // Random Thread.sleep between 1 and 5 seconds
-            try {
-                Thread.sleep((long) (Math.random() * 5000));
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }, executor);
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    // Random Thread.sleep between 1 and 5 seconds
+                    try {
+                        Thread.sleep((long) (Math.random() * 5000));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                },
+                executor);
     }
 }

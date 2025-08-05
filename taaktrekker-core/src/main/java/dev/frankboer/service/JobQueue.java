@@ -2,7 +2,6 @@ package dev.frankboer.service;
 
 import dev.frankboer.domain.Job;
 import dev.frankboer.domain.ScheduleRequest;
-
 import java.util.Optional;
 
 public interface JobQueue {

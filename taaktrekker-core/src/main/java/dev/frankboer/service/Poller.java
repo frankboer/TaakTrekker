@@ -1,7 +1,6 @@
 package dev.frankboer.service;
 
 import dev.frankboer.domain.Job;
-
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,25 +36,23 @@ public class Poller {
         if (!running) return;
 
         if (slots.get() < maxSlots) {
-            jobQueue.dequeue().ifPresent(job -> {
-                jobExecutor.submit(() -> {
-                    slots.incrementAndGet();
-                    try {
-                        jobWorker.run(job)
-                                .whenComplete((result, error) -> {
-                                    if (error != null) {
-                                        jobQueue.updateStatus(job, Job.Status.FAILED);
-                                    } else {
-                                        jobQueue.updateStatus(job, Job.Status.COMPLETED);
-                                    }
-                                    slots.decrementAndGet();
-                                });
-                    } catch (Exception e) {
-                        jobQueue.updateStatus(job, Job.Status.FAILED);
-                        slots.decrementAndGet();
-                    }
-                });
-            });
+            jobQueue.dequeue()
+                    .ifPresent(job -> jobExecutor.submit(() -> {
+                        slots.incrementAndGet();
+                        try {
+                            jobWorker.run(job).whenComplete((result, error) -> {
+                                if (error != null) {
+                                    jobQueue.updateStatus(job, Job.Status.FAILED);
+                                } else {
+                                    jobQueue.updateStatus(job, Job.Status.COMPLETED);
+                                }
+                                slots.decrementAndGet();
+                            });
+                        } catch (Exception e) {
+                            jobQueue.updateStatus(job, Job.Status.FAILED);
+                            slots.decrementAndGet();
+                        }
+                    }));
         }
     }
 }
