@@ -13,16 +13,16 @@ public class SimpleJobWorker implements JobWorker {
     }
 
     @Override
-    public CompletionStage<Void> run(Job job) {
+    public CompletionStage<Job> run(Job job) {
         return CompletableFuture.supplyAsync(
                 () -> {
                     // Random Thread.sleep between 1 and 5 seconds
-                    try {
-                        System.out.println("job = " + job);
-                        Thread.sleep((long) (Math.random() * 5000));
-                    } catch (InterruptedException e) {
-                        throw new IllegalStateException(e);
-                    }
+                    //                    try {
+                    //                        System.out.println("job = " + job);
+                    //                        Thread.sleep((long) (Math.random() * 1000));
+                    //                    } catch (InterruptedException e) {
+                    //                        throw new IllegalStateException(e);
+                    //                    }
                     return null;
                 },
                 executor);
