@@ -4,31 +4,24 @@ import java.time.LocalDateTime;
 
 public class Job {
     private Long id;
-    private String type;
+    private String name;
     private int priority;
-    private Status status;
+    private JobStatus jobStatus;
     private String payload; // We'll store JSON as String
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime created;
+    private LocalDateTime updated;
+    private LocalDateTime started;
+    private LocalDateTime finished;
 
-    public enum Status {
-        PENDING,
-        RUNNING,
-        COMPLETED,
-        FAILED
-    }
-
-    // Constructor
-    public Job(String type, int priority, String payload) {
-        this.type = type;
+    public Job(String name, int priority, String payload) {
+        this.name = name;
         this.priority = priority;
-        this.status = Status.PENDING;
+        this.jobStatus = JobStatus.PENDING;
         this.payload = payload;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.created = LocalDateTime.now();
+        this.updated = LocalDateTime.now();
     }
 
-    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -37,12 +30,12 @@ public class Job {
         this.id = id;
     }
 
-    public String getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getPriority() {
@@ -53,13 +46,13 @@ public class Job {
         this.priority = priority;
     }
 
-    public Status getStatus() {
-        return status;
+    public JobStatus getStatus() {
+        return jobStatus;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
-        this.updatedAt = LocalDateTime.now();
+    public void setStatus(JobStatus jobStatus) {
+        this.jobStatus = jobStatus;
+        this.updated = LocalDateTime.now();
     }
 
     public String getPayload() {
@@ -70,23 +63,41 @@ public class Job {
         this.payload = payload;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getCreated() {
+        return created;
     }
 
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+    public LocalDateTime getUpdated() {
+        return updated;
+    }
+
+    public LocalDateTime getStarted() {
+        return started;
+    }
+
+    public void setStarted(LocalDateTime started) {
+        this.started = started;
+    }
+
+    public LocalDateTime getFinished() {
+        return finished;
+    }
+
+    public void setFinished(LocalDateTime finished) {
+        this.finished = finished;
     }
 
     @Override
     public String toString() {
         return "Job{" + "id="
-                + id + ", type='"
-                + type + '\'' + ", priority="
-                + priority + ", status="
-                + status + ", payload='"
-                + payload + '\'' + ", createdAt="
-                + createdAt + ", updatedAt="
-                + updatedAt + '}';
+                + id + ", name='"
+                + name + '\'' + ", priority="
+                + priority + ", jobStatus="
+                + jobStatus + ", payload='"
+                + payload + '\'' + ", created="
+                + created + ", updated="
+                + updated + ", started="
+                + started + ", finished="
+                + finished + '}';
     }
 }
