@@ -1,20 +1,15 @@
-package dev.frankboer.service;
+package dev.frankboer.domain;
 
-import dev.frankboer.domain.Job;
+import dev.frankboer.service.JobWorker;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SimpleJobWorker implements JobWorker {
     private final ExecutorService executor;
 
     public SimpleJobWorker(ExecutorService executor) {
         this.executor = executor;
-    }
-
-    public SimpleJobWorker() {
-        this.executor = Executors.newSingleThreadExecutor();
     }
 
     @Override
