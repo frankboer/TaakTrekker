@@ -1,5 +1,9 @@
 [versions]
+postgres-driver = "42.7.7"
+hikari = "7.0.0"
 
 [libraries]
+hikari = {module = "com.zaxxer:HikariCP", version.ref = "hikari"}
+postgres-driver = {module ="org.postgresql:postgresql", version.ref = "postgres-driver"}
 
 [plugins]
