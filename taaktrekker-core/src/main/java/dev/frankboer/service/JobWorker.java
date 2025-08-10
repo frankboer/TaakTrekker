@@ -5,5 +5,5 @@ import java.util.concurrent.CompletionStage;
 
 public interface JobWorker {
 
-    CompletionStage<Void> run(Job job);
+    CompletionStage<Job> run(Job job);
 }

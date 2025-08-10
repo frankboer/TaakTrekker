@@ -2,53 +2,85 @@ package dev.frankboer.domain;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import dev.frankboer.service.*;
-import dev.frankboer.service.jdbc.JdbcJobQueue;
+import dev.frankboer.service.JobProcessingSystem;
+import dev.frankboer.service.JobServiceConfigurator;
+import dev.frankboer.service.Listener;
+import dev.frankboer.service.Poller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
-@Disabled("Only for manual testing")
+ @Disabled("Only for manual testing")
 public class SimpleTest {
-    private final DataSource dataSource = createPostgresDataSource();
-
-    private JobQueue jobQueue;
+    private static final int MAX_PARALLEL_JOBS = 2000;
+    private JobProcessingSystem configurator;
     private Poller poller;
-    private JobWorker jobWorker;
+    private TestListener listener;
 
     @BeforeEach
     void setup() {
-        var listener = new Listener() {
-            @Override
-            public void onJobScheduled(Job job) {}
+        listener = new TestListener();
+        configurator = JobServiceConfigurator.worker()
+                .withDataSource(createPostgresDataSource())
+                .withListener(listener)
+                .withJobWorker(new SimpleJobWorker(Executors.newVirtualThreadPerTaskExecutor()))
+                .withInterval(Duration.ofMillis(200))
+                .withMaxParallelJobs(MAX_PARALLEL_JOBS)
+                .build();
 
-            @Override
-            public void onJobStarted(Job job) {}
-
-            @Override
-            public void onJobFinished(Job job) {}
-
-            @Override
-            public void onJobFailed(Job job) {}
-        };
-        jobQueue = new JdbcJobQueue(dataSource, listener);
-        var executor = Executors.newVirtualThreadPerTaskExecutor();
-        jobWorker = new SimpleJobWorker(executor);
-        poller = new Poller(jobQueue, jobWorker, listener, 1000);
+        poller = configurator.getPoller();
     }
 
     @Test
-    void shouldProcess1000Tasks() throws InterruptedException {
-        poller.start();
-        for (var i = 0; i < 1000; i++) {
-            jobQueue.enqueue(new ScheduleRequest("type" + i, 1, null));
+    void shouldProcess1000Tasks() {
+
+        configurator.start();
+        var list = new ArrayList<ScheduleRequest>();
+        for (var i = 0; i < 10_000; i++) {
+            ScheduleRequest scheduleRequest = new ScheduleRequest(String.valueOf(i), 1, null);
+            var job = new Job(scheduleRequest.type(), scheduleRequest.priority(), scheduleRequest.payload());
+            listener.onJobScheduled(job);
+            list.add(scheduleRequest);
+        }
+        configurator.getJobRepository().enqueue(list);
+
+        listener.waitForCompletion().join();
+        configurator.stop();
+    }
+
+    private static class TestListener implements Listener {
+        Map<String, CompletableFuture<Job>> map = new HashMap<>();
+
+        public void onJobScheduled(Job job) {
+            CompletableFuture<Job> future = new CompletableFuture<>();
+            map.put(job.getName(), future);
         }
 
-        Thread.sleep(10_000);
-        poller.stop();
+        @Override
+        public void onJobStarted(Job job) {}
+
+        @Override
+        public void onJobFinished(Job job) {
+            //            System.out.println(job);
+            map.getOrDefault(job.getName(), new CompletableFuture<>()).complete(job);
+        }
+
+        @Override
+        public void onJobFailed(Job job) {
+            throw new IllegalStateException("Job failed");
+        }
+
+        public CompletableFuture<Void> waitForCompletion() {
+            return CompletableFuture.allOf(map.values().toArray(new CompletableFuture[0]));
+        }
     }
 
     public static DataSource createPostgresDataSource() {

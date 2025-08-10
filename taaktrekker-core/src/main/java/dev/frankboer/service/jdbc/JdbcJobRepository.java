@@ -1,47 +1,43 @@
 package dev.frankboer.service.jdbc;
 
 import dev.frankboer.domain.Job;
+import dev.frankboer.domain.JobStatus;
 import dev.frankboer.domain.ScheduleRequest;
-import dev.frankboer.service.JobQueue;
-import dev.frankboer.service.Listener;
+import dev.frankboer.service.JobRepository;
 import dev.frankboer.service.ScheduleException;
+
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-import javax.sql.DataSource;
 
-public class JdbcJobQueue implements JobQueue {
+public class JdbcJobRepository implements JobRepository {
     private final DataSource dataSource;
-    private final Listener listener;
 
-    public JdbcJobQueue(DataSource dataSource, Listener listener) {
+    public JdbcJobRepository(DataSource dataSource) {
         this.dataSource = dataSource;
-        this.listener = listener;
     }
 
     @Override
-    public Job enqueue(ScheduleRequest request) {
+    public void enqueue(List<ScheduleRequest> requests) {
         try (var connection = dataSource.getConnection()) {
-            var sql = "INSERT INTO jobs (type, priority, payload) VALUES (?, ?, ?::jsonb) RETURNING *";
+            connection.setAutoCommit(false);
+            var sql = "INSERT INTO jobs (type, priority, payload) VALUES (?, ?, ?::jsonb)";
             try (var stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, request.type());
-                stmt.setInt(2, request.priority());
-                stmt.setString(3, request.payload());
+                for (ScheduleRequest request : requests) {
+                    stmt.setString(1, request.type());
+                    stmt.setInt(2, request.priority());
+                    stmt.setString(3, request.payload());
 
-                var rs = stmt.executeQuery();
-                if (rs.next()) {
-                    Job job = mapResultSetToJob(rs);
-                    listener.onJobScheduled(job);
-                    return job;
+                    stmt.addBatch();
                 }
+                stmt.executeBatch();
+                connection.commit();
             }
-
         } catch (SQLException e) {
             throw new ScheduleException(e);
         }
-
-        throw new ScheduleException(new IllegalStateException("No job returned"));
     }
 
     @Override
@@ -72,6 +68,7 @@ public class JdbcJobQueue implements JobQueue {
                         jobs.add(job);
                     }
                     connection.commit();
+                    System.out.println("jobs = " + jobs.size());
                     return jobs;
                 }
             } catch (SQLException e) {
@@ -81,12 +78,12 @@ public class JdbcJobQueue implements JobQueue {
                 connection.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
     @Override
-    public void updateStatus(Job job, Job.Status status) {
+    public void updateStatus(Job job, JobStatus status) {
         try (var connection = dataSource.getConnection()) {
             var sql = "UPDATE jobs SET status = ?, updated_at = NOW() WHERE id = ?";
             try (var stmt = connection.prepareStatement(sql)) {
@@ -102,7 +99,7 @@ public class JdbcJobQueue implements JobQueue {
     private Job mapResultSetToJob(ResultSet rs) throws SQLException {
         Job job = new Job(rs.getString("type"), rs.getInt("priority"), rs.getString("payload"));
         job.setId(rs.getLong("id"));
-        job.setStatus(Job.Status.valueOf(rs.getString("status")));
+        job.setStatus(JobStatus.valueOf(rs.getString("status")));
         return job;
     }
 }
