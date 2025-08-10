@@ -37,6 +37,10 @@ public class JobServiceConfigurator {
         private int maxParallelJobs = 1; // default value
         private Duration interval = Duration.ofMillis(100); // default value
 
+        // New: optional schema/table configuration
+        private String schemaName;
+        private String tableName;
+
         private JobWorkerBuilder() {}
 
         /**
@@ -80,25 +84,47 @@ public class JobServiceConfigurator {
         }
 
         /**
+         * Configure the database schema used by the job repository.
+         */
+        public JobWorkerBuilder withSchema(String schemaName) {
+            this.schemaName = schemaName;
+            return this;
+        }
+
+        /**
+         * Configure the database table used by the job repository.
+         */
+        public JobWorkerBuilder withTable(String tableName) {
+            this.tableName = tableName;
+            return this;
+        }
+
+        /**
          * Build the configured job processing system
          */
         public JobProcessingSystem build() {
             if (dataSource == null) {
                 throw new IllegalStateException("DataSource must be configured");
             }
-
-            // Create the job repository
-            JobRepository jobRepository = new JdbcJobRepository(dataSource);
-
-            // Create or use the provided job worker
             if (jobWorker == null) {
                 throw new IllegalStateException("JobWorker must be configured");
             }
+
+            // Create the job repository with optional schema/table configuration
+            JobRepository jobRepository = createJobRepository();
 
             // Create the poller
             Poller poller = new Poller(jobRepository, jobWorker, listener, interval, maxParallelJobs);
 
             return new JobProcessingSystem(jobRepository, jobWorker, poller);
+        }
+
+        private JobRepository createJobRepository() {
+            // Prefer constructor accepting schema/table if provided, otherwise fall back
+            if (schemaName != null || tableName != null) {
+                return new JdbcJobRepository(dataSource, schemaName, tableName);
+            }
+            return new JdbcJobRepository(dataSource, schemaName, tableName);
         }
     }
 
@@ -108,6 +134,10 @@ public class JobServiceConfigurator {
     public static class RepositoryBuilder {
         private DataSource dataSource;
         private Listener listener;
+
+        // New: optional schema/table configuration
+        private String schemaName;
+        private String tableName;
 
         private RepositoryBuilder() {}
 
@@ -120,6 +150,22 @@ public class JobServiceConfigurator {
         }
 
         /**
+         * Configure the database schema used by the job repository.
+         */
+        public RepositoryBuilder withSchema(String schemaName) {
+            this.schemaName = schemaName;
+            return this;
+        }
+
+        /**
+         * Configure the database table used by the job repository.
+         */
+        public RepositoryBuilder withTable(String tableName) {
+            this.tableName = tableName;
+            return this;
+        }
+
+        /**
          * Build the configured job repository
          */
         public JobRepository build() {
@@ -127,7 +173,7 @@ public class JobServiceConfigurator {
                 throw new IllegalStateException("DataSource must be configured");
             }
 
-            return new JdbcJobRepository(dataSource);
+            return new JdbcJobRepository(dataSource, schemaName, tableName);
         }
     }
 }

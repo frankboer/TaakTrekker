@@ -7,7 +7,6 @@ import dev.frankboer.service.JobServiceConfigurator;
 import dev.frankboer.service.Listener;
 import dev.frankboer.service.Poller;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -18,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
- @Disabled("Only for manual testing")
+// @Disabled("Only for manual testing")
 public class SimpleTest {
     private static final int MAX_PARALLEL_JOBS = 2000;
     private JobProcessingSystem configurator;
@@ -30,6 +29,8 @@ public class SimpleTest {
         listener = new TestListener();
         configurator = JobServiceConfigurator.worker()
                 .withDataSource(createPostgresDataSource())
+                .withSchema("public")
+                .withTable("jobs")
                 .withListener(listener)
                 .withJobWorker(new SimpleJobWorker(Executors.newVirtualThreadPerTaskExecutor()))
                 .withInterval(Duration.ofMillis(200))
