@@ -1,10 +1,7 @@
 rootProject.name = "TaakTrekker"
-
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+rootProject.name = "taaktrekker"
 
 include("taaktrekker-core")
+include("taaktrekker-spring")
+
+include("examples")

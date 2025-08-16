@@ -11,4 +11,5 @@ repositories {
 
 dependencies {
     api("com.diffplug.spotless", "spotless-plugin-gradle", "7.0.2")
+    api("org.openrewrite.rewrite:org.openrewrite.rewrite.gradle.plugin:7.12.1")
 }

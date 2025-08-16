@@ -8,7 +8,7 @@ public class Job {
     private int priority;
     private JobStatus jobStatus;
     private String payload; // We'll store JSON as String
-    private LocalDateTime created;
+    private final LocalDateTime created;
     private LocalDateTime updated;
     private LocalDateTime started;
     private LocalDateTime finished;

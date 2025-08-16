@@ -20,7 +20,7 @@ public class JdbcJobRepository implements JobRepository {
 
     public JdbcJobRepository(DataSource dataSource, String schemaName, String tableName) {
         this.dataSource = dataSource;
-        this.identifier = "%s.%s".formatted(schemaName,tableName);
+        this.identifier = "%s.%s".formatted(schemaName, tableName);
         isValidSchemaTable(identifier);
     }
 
@@ -52,18 +52,17 @@ public class JdbcJobRepository implements JobRepository {
             try {
                 String sql =
                         """
-                UPDATE %s
-                SET status = 'RUNNING', updated_at = NOW()
-                WHERE id IN (
-                    SELECT id FROM %s
-                    WHERE status = 'PENDING'
-                    ORDER BY priority DESC, created_at ASC
-                    LIMIT %d
-                    FOR UPDATE SKIP LOCKED
-                )
-                RETURNING *
-                """
-                                .formatted(identifier, identifier, limit);
+                                UPDATE %s
+                                SET status = 'RUNNING', updated_at = NOW()
+                                WHERE id IN (
+                                    SELECT id FROM %s
+                                    WHERE status = 'PENDING'
+                                    ORDER BY priority DESC, created_at ASC
+                                    LIMIT %d
+                                    FOR UPDATE SKIP LOCKED
+                                )
+                                RETURNING *
+                                """.formatted(identifier, identifier, limit);
                 try (var stmt = connection.prepareStatement(sql)) {
                     var rs = stmt.executeQuery();
 
@@ -101,11 +100,13 @@ public class JdbcJobRepository implements JobRepository {
         }
     }
 
-    public static boolean isValidSchemaTable(String input) {
+    public static void isValidSchemaTable(String input) {
         if (input == null || input.isBlank()) {
-            return false;
+            throw new IllegalArgumentException("Schema and table must not be null or blank");
         }
-        return input.matches(SCHEMA_TABLE_PATTERN);
+        if (!input.matches(SCHEMA_TABLE_PATTERN)) {
+            throw new IllegalArgumentException("Schema and table must match pattern %s".formatted(SCHEMA_TABLE_PATTERN));
+        }
     }
 
     private Job mapResultSetToJob(ResultSet rs) throws SQLException {

@@ -36,7 +36,9 @@ public class Poller {
     }
 
     private void pollJobQueue() {
-        if (!running) return;
+        if (!running) {
+            return;
+        }
 
         if (slots.get() < maxSlots) {
             jobRepository.dequeue(maxSlots - slots.get()).forEach(job -> {

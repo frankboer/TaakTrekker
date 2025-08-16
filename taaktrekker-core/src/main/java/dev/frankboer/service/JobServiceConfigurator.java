@@ -7,9 +7,12 @@ import java.time.Duration;
 
 /**
  * Builder for creating job processing system components.
- * Allows for flexible and fluent configuration of different parts of the system.
+ * Allows for flexible and fluent configuration of different parts within the system.
  */
 public class JobServiceConfigurator {
+
+    private JobServiceConfigurator() {
+    }
 
     /**
      * Starts building a job processing system
@@ -121,9 +124,6 @@ public class JobServiceConfigurator {
 
         private JobRepository createJobRepository() {
             // Prefer constructor accepting schema/table if provided, otherwise fall back
-            if (schemaName != null || tableName != null) {
-                return new JdbcJobRepository(dataSource, schemaName, tableName);
-            }
             return new JdbcJobRepository(dataSource, schemaName, tableName);
         }
     }
@@ -133,7 +133,6 @@ public class JobServiceConfigurator {
      */
     public static class RepositoryBuilder {
         private DataSource dataSource;
-        private Listener listener;
 
         // New: optional schema/table configuration
         private String schemaName;
