@@ -13,17 +13,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class JdbcJobRepository implements JobRepository {
-    private final DataSource dataSource;
+    private static final String SCHEMA_TABLE_PATTERN = "^[a-zA-Z_][a-zA-Z0-9_]{0,62}\\.[a-zA-Z_][a-zA-Z0-9_]{0,62}$";
 
-    public JdbcJobRepository(DataSource dataSource) {
+    private final DataSource dataSource;
+    private final String identifier;
+
+    public JdbcJobRepository(DataSource dataSource, String schemaName, String tableName) {
         this.dataSource = dataSource;
+        this.identifier = "%s.%s".formatted(schemaName,tableName);
+        isValidSchemaTable(identifier);
     }
 
     @Override
     public void enqueue(List<ScheduleRequest> requests) {
         try (var connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
-            var sql = "INSERT INTO jobs (type, priority, payload) VALUES (?, ?, ?::jsonb)";
+            var sql = "INSERT INTO %s (type, priority, payload) VALUES (?, ?, ?::jsonb)".formatted(identifier);
             try (var stmt = connection.prepareStatement(sql)) {
                 for (ScheduleRequest request : requests) {
                     stmt.setString(1, request.type());
@@ -47,10 +52,10 @@ public class JdbcJobRepository implements JobRepository {
             try {
                 String sql =
                         """
-                UPDATE jobs
+                UPDATE %s
                 SET status = 'RUNNING', updated_at = NOW()
                 WHERE id IN (
-                    SELECT id FROM jobs
+                    SELECT id FROM %s
                     WHERE status = 'PENDING'
                     ORDER BY priority DESC, created_at ASC
                     LIMIT %d
@@ -58,7 +63,7 @@ public class JdbcJobRepository implements JobRepository {
                 )
                 RETURNING *
                 """
-                                .formatted(limit);
+                                .formatted(identifier, identifier, limit);
                 try (var stmt = connection.prepareStatement(sql)) {
                     var rs = stmt.executeQuery();
 
@@ -85,7 +90,7 @@ public class JdbcJobRepository implements JobRepository {
     @Override
     public void updateStatus(Job job, JobStatus status) {
         try (var connection = dataSource.getConnection()) {
-            var sql = "UPDATE jobs SET status = ?, updated_at = NOW() WHERE id = ?";
+            var sql = "UPDATE %s SET status = ?, updated_at = NOW() WHERE id = ?".formatted(identifier);
             try (var stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, status.name());
                 stmt.setLong(2, job.getId());
@@ -94,6 +99,13 @@ public class JdbcJobRepository implements JobRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean isValidSchemaTable(String input) {
+        if (input == null || input.isBlank()) {
+            return false;
+        }
+        return input.matches(SCHEMA_TABLE_PATTERN);
     }
 
     private Job mapResultSetToJob(ResultSet rs) throws SQLException {
