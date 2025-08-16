@@ -20,7 +20,7 @@ public class JdbcJobRepository implements JobRepository {
 
     public JdbcJobRepository(DataSource dataSource, String schemaName, String tableName) {
         this.dataSource = dataSource;
-        this.identifier = "%s.%s".formatted(schemaName,tableName);
+        this.identifier = "%s.%s".formatted(schemaName, tableName);
         isValidSchemaTable(identifier);
     }
 

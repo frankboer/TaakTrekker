@@ -1,5 +1,6 @@
 plugins {
     id("conventions.java")
+    id("conventions.openrewrite")
 }
 
 dependencies {

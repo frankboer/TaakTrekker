@@ -11,6 +11,9 @@ import java.time.Duration;
  */
 public class JobServiceConfigurator {
 
+    private JobServiceConfigurator() {
+    }
+
     /**
      * Starts building a job processing system
      * @return A new builder instance

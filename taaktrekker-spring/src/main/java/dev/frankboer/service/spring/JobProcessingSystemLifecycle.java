@@ -10,7 +10,7 @@ import org.springframework.context.SmartLifecycle;
 public class JobProcessingSystemLifecycle implements SmartLifecycle {
 
     private final JobProcessingSystem jobProcessingSystem;
-    private boolean running = false;
+    private boolean running;
 
     public JobProcessingSystemLifecycle(JobProcessingSystem jobProcessingSystem) {
         this.jobProcessingSystem = jobProcessingSystem;

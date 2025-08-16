@@ -2,6 +2,7 @@
 plugins {
     id("java")
     id("conventions.java")
+    id("conventions.openrewrite")
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
