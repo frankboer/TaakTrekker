@@ -1,11 +1,9 @@
 plugins {
-    id("java")
     id("conventions.java")
 }
 
 dependencies {
     implementation(libs.hikari)
-
     runtimeOnly(libs.postgres.driver)
 
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
