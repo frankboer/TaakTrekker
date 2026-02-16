@@ -1,5 +1,5 @@
 [versions]
-postgres-driver = "42.7.9"
+postgres-driver = "42.7.10"
 hikari = "7.0.2"
 
 ### Spring
